@@ -28,10 +28,12 @@
 * Amazon S3 is a trademark of Amazon.com, Inc. or its affiliates.
 */
 
+namespace S3v4;
+
 /**
 * Amazon S3 PHP class
 *
-* @link http://undesigned.org.za/2007/10/22/amazon-s3-php-class
+* @link https://github.com/tpyo/amazon-s3-php-class
 * @version 0.5.1
 */
 class S3
@@ -590,7 +592,7 @@ class S3
 
 		if ($location !== false && $location !== "us-east-1")
 		{
-			$dom = new DOMDocument;
+			$dom = new \DOMDocument;
 			$createBucketConfiguration = $dom->createElement('CreateBucketConfiguration');
 			$locationConstraint = $dom->createElement('LocationConstraint', $location);
 			$createBucketConfiguration->appendChild($locationConstraint);
@@ -934,7 +936,7 @@ class S3
 			return false;
 		}
 
-		$dom = new DOMDocument;
+		$dom = new \DOMDocument;
 		$websiteConfiguration = $dom->createElement('WebsiteConfiguration');
 		$redirectAllRequestsTo = $dom->createElement('RedirectAllRequestsTo');
 		$hostName = $dom->createElement('HostName', $location);
@@ -990,7 +992,7 @@ class S3
 			if (!$aclReadSet || !$aclWriteSet) self::setAccessControlPolicy($targetBucket, '', $acp);
 		}
 
-		$dom = new DOMDocument;
+		$dom = new \DOMDocument;
 		$bucketLoggingStatus = $dom->createElement('BucketLoggingStatus');
 		$bucketLoggingStatus->setAttribute('xmlns', 'http://s3.amazonaws.com/doc/2006-03-01/');
 		if ($targetBucket !== null)
@@ -1097,7 +1099,7 @@ class S3
 	*/
 	public static function setAccessControlPolicy($bucket, $uri = '', $acp = array())
 	{
-		$dom = new DOMDocument;
+		$dom = new \DOMDocument;
 		$dom->formatOutput = true;
 		$accessControlPolicy = $dom->createElement('AccessControlPolicy');
 		$accessControlList = $dom->createElement('AccessControlList');
@@ -1253,8 +1255,9 @@ class S3
 		$expires = self::__getTime() + $lifetime;
 		$uri = str_replace(array('%2F', '%2B'), array('/', '+'), rawurlencode($uri));
 		return sprintf(($https ? 'https' : 'http').'://%s/%s?AWSAccessKeyId=%s&Expires=%u&Signature=%s',
-		// $hostBucket ? $bucket : $bucket.'.s3.amazonaws.com', $uri, self::$__accessKey, $expires,
-		$hostBucket ? $bucket : self::$endpoint.'/'.$bucket, $uri, self::$__accessKey, $expires,
+		
+		// $hostBucket ? $bucket : self::$endpoint.'/'.$bucket, $uri, self::$__accessKey, $expires,
+        $hostBucket ? $bucket : $bucket . '.' . self::$endpoint, $uri, self::$__accessKey, $expires,
 		urlencode(self::__getHash("GET\n\n\n{$expires}\n/{$bucket}/{$uri}")));
 	}
 
@@ -1680,7 +1683,7 @@ class S3
 	*/
 	private static function __getCloudFrontInvalidationBatchXML($paths, $callerReference = '0')
 	{
-		$dom = new DOMDocument('1.0', 'UTF-8');
+		$dom = new \DOMDocument('1.0', 'UTF-8');
 		$dom->formatOutput = true;
 		$invalidationBatch = $dom->createElement('InvalidationBatch');
 		foreach ($paths as $path)
@@ -1761,7 +1764,7 @@ class S3
 	*/
 	private static function __getCloudFrontDistributionConfigXML($bucket, $enabled, $comment, $callerReference = '0', $cnames = array(), $defaultRootObject = null, $originAccessIdentity = null, $trustedSigners = array())
 	{
-		$dom = new DOMDocument('1.0', 'UTF-8');
+		$dom = new \DOMDocument('1.0', 'UTF-8');
 		$dom->formatOutput = true;
 		$distributionConfig = $dom->createElement('DistributionConfig');
 		$distributionConfig->setAttribute('xmlns', 'http://cloudfront.amazonaws.com/doc/2010-11-01/');
@@ -2227,7 +2230,7 @@ final class S3Request
 
 
 		$this->headers['Date'] = gmdate('D, d M Y H:i:s T');
-		$this->response = new STDClass;
+		$this->response = new \STDClass;
 		$this->response->error = false;
 		$this->response->body = null;
 		$this->response->headers = array();
@@ -2424,7 +2427,7 @@ final class S3Request
 
 		// Parse body into XML
 		if ($this->response->error === false && isset($this->response->headers['type']) &&
-		$this->response->headers['type'] == 'application/xml' && isset($this->response->body))
+		0 === strpos($this->response->headers['type'], 'application/xml') && isset($this->response->body))
 		{
 			$this->response->body = simplexml_load_string($this->response->body);
 
@@ -2527,7 +2530,7 @@ final class S3Request
  * @version 0.5.0-dev
  */
 
-class S3Exception extends Exception {
+class S3Exception extends \Exception {
 	/**
 	 * Class constructor
 	 *
